@@ -130,6 +130,7 @@ const CreatePoint = () => {
     };
 
     await api.post('points', data);
+    console.log(data);
     alert('Ponto de coleta criado!');
     histoty.push('/');
   }
