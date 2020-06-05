@@ -24,7 +24,7 @@ const Detail = () => {
         </TouchableOpacity>
 
         <Image style={styles.pointImage} source={{uri: 'https://images.unsplash.com/photo-1574639107120-f768087a3c81?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=80'}}/>
-        <Text style={styles.pointName}>Mercadão</Text>
+        <Text style={styles.pointName}>Mercadão do Zé</Text>
         <Text style={styles.pointItems}>lampas e oleo</Text>
 
         <View style={styles.address}>
