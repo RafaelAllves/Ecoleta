@@ -1,12 +1,27 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import { View, Image, StyleSheet, Text, ImageBackground, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
 import { RectButton } from 'react-native-gesture-handler';
-import { Feather as Icon } from '@expo/vector-icons';
+import { Feather as Icon, AntDesign } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import RNPickerSelect from 'react-native-picker-select';
+import axios from 'axios';
+
+
+interface IBGEUFResponse {
+  sigla: string;
+}
+
+interface IBGECityResponse {
+  nome: string;
+}
+
 
 const Home = () => {
   const [uf, setUf] = useState('');
   const [city, setCity] = useState('');
+  const [ufs, setUfs] = useState<string[]>([]);
+  const [cities, setCities] = useState<string[]>([]);
+  
   const navigation = useNavigation();
 
   function handlerNavigateToPoints() {
@@ -15,6 +30,26 @@ const Home = () => {
       city,
     });
   }
+
+  useEffect(() => {
+    axios.get<IBGEUFResponse[]>('https://servicodados.ibge.gov.br/api/v1/localidades/estados').then(response => {
+      const ufInitials = response.data.map(uf => uf.sigla);
+      setUfs(ufInitials);
+    });
+  }, []);
+
+  useEffect(() => {
+    if (uf === '0') {
+      return;
+    }
+    axios
+      .get<IBGECityResponse[]>(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${uf}/municipios`)
+      .then(response => {
+        const cityNames = response.data.map(city => city.nome);
+        setCities(cityNames);
+      });
+
+  }, [uf]);
 
 
   return (
@@ -32,21 +67,49 @@ const Home = () => {
           </View>
         </View>
         <View style={styles.footer}>
-          <TextInput 
-            style={styles.input} 
-            placeholder="Digite a UF"
-            maxLength={2}
-            autoCapitalize='characters'
-            autoCorrect={false}
-            value={uf}
-            onChangeText={setUf}
+          <RNPickerSelect
+            placeholder={{
+              label: 'Selecione um estado',
+            }}
+            useNativeAndroidPickerStyle={false}
+            style={{
+              ...pickerSelectStyles,
+              iconContainer: {
+                top: 20,
+                right: 10,
+              },
+            }}
+            onValueChange={(value) => setUf(value)}
+            items={ufs.map(uf => (
+              {label: uf, value: uf}
+            ))}
+            Icon={() => {
+              return (
+                <AntDesign name="down" color="#B2B2B2" size={24} />
+              );
+            }}
           />
-          <TextInput 
-            style={styles.input} 
-            placeholder="Digite a cidade"
-            autoCorrect={false}
-            value={city}
-            onChangeText={setCity}
+          <RNPickerSelect
+            placeholder={{
+              label: 'Selecione uma cidade',
+            }}
+            useNativeAndroidPickerStyle={false}
+            style={{
+              ...pickerSelectStyles,
+              iconContainer: {
+                top: 20,
+                right: 10,
+              },
+            }}
+            onValueChange={(value) => setCity(value)}
+            items={cities.map(city => (
+              {label: city, value: city}
+            ))}
+            Icon={() => {
+              return (
+                <AntDesign name="down" color="#B2B2B2" size={24} />
+              );
+            }}
           />
           <RectButton style={styles.button} onPress={handlerNavigateToPoints}>
             <View style={styles.buttonIcon}>
@@ -129,6 +192,29 @@ const styles = StyleSheet.create({
 
     fontSize: 16,
   }
+});
+
+const pickerSelectStyles = StyleSheet.create({
+  inputIOS: {
+    height: 60,
+    backgroundColor: '#FFF',
+    borderRadius: 10,
+    marginBottom: 8,
+    paddingHorizontal: 14,
+    fontSize: 16,
+    color: '#B2B2B2'
+
+  },
+  inputAndroid: {
+    height: 60,
+    backgroundColor: '#FFF',
+    borderRadius: 10,
+    marginBottom: 8,
+    paddingHorizontal: 14,
+    fontSize: 16,
+    color: '#B2B2B2'
+  },
+  
 });
 
 export default Home;
